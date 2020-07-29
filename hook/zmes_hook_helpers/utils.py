@@ -108,7 +108,7 @@ def import_zm_zones(mid, reason):
             rz = rz[1]
 
         reason_zones = [x.strip() for x in rz.split(',')]
-        g.logger.Debug(1,'Found motion zones provided in alarm cause: {}'.format(reason_zones))
+        g.logger.debug(1,'Found motion zones provided in alarm cause: {}'.format(reason_zones))
 
 
     for item in j['zones']:
