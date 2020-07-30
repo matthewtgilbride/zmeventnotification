@@ -93,7 +93,7 @@ def import_zm_zones(mid, reason):
     c = input_file.read()
     j = json.loads(c)
 
-    # Now lets look at reason to see if we need to 
+    # Now lets look at reason to see if we need to
     # honor ZM motion zones
 
     reason_zones = []
@@ -101,6 +101,10 @@ def import_zm_zones(mid, reason):
         rz = reason.split('Motion:')
         if len(rz) > 1:
             rz = rz[1]
+            reason_zones = [x.strip() for x in rz.split(',')]
+            g.logger.debug('Found motion zones provided in alarm cause: {}'.format(reason_zones))
+        elif reason[0] == ' ':  # mocord cause
+            rz = reason[1:]
             reason_zones = [x.strip() for x in rz.split(',')]
             g.logger.debug('Found motion zones provided in alarm cause: {}'.format(reason_zones))
 
@@ -124,7 +128,7 @@ def download_files(args):
             g.config['wait']))
         time.sleep(g.config['wait'])
 
-    
+
     if g.config['portal'].lower().startswith('https://'):
         main_handler = urllib.request.HTTPSHandler(context=g.ctx)
     else:
@@ -222,7 +226,7 @@ def get_pyzm_config(args):
     config_file.read(args.get('config'))
     if config_file.has_option('general', 'pyzm_overrides'):
         pyzm_overrides = config_file.get('general', 'pyzm_overrides')
-        g.config['pyzm_overrides'] =  ast.literal_eval(pyzm_overrides) if pyzm_overrides else {}     
+        g.config['pyzm_overrides'] =  ast.literal_eval(pyzm_overrides) if pyzm_overrides else {}
 
 
 def process_config(args, ctx):
@@ -377,11 +381,11 @@ def process_config(args, ctx):
         g.config['wait'] = 0
         g.config['write_image_to_zm'] = 'no'
         g.polygons = []
-       
-        
+
+
     if  args.get('output_path'):
         g.logger.debug ('Output path modified to {}'.format(args.get('output_path')))
         g.config['image_path'] = args.get('output_path')
         g.config['write_debug_image'] = 'yes'
-    
-   
+
+
