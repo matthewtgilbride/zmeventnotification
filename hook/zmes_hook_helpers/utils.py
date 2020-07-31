@@ -55,6 +55,10 @@ def str_split(my_str):
     return [x.strip() for x in my_str.split(',')]
 
 
+# credit: https://stackoverflow.com/a/5320179
+def findWholeWord(w):
+    return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+
 # Imports zone definitions from ZM
 def import_zm_zones(mid, reason):
     match_reason = True if g.config['only_triggered_zm_zones']=='yes' else False
@@ -96,29 +100,16 @@ def import_zm_zones(mid, reason):
     # Now lets look at reason to see if we need to
     # honor ZM motion zones
 
-    reason_zones = []
-    if match_reason and reason and 'Motion:' in reason:
-        rz = reason.split('Motion:')
-        if len(rz) > 1:
-            rz = rz[1]
-            reason_zones = [x.strip() for x in rz.split(',')]
-            g.logger.debug('Found motion zones provided in alarm cause: {}'.format(reason_zones))
-        elif reason[0] == ' ':  # mocord cause
-            rz = reason[1:]
-            reason_zones = [x.strip() for x in rz.split(',')]
-            g.logger.debug('Found motion zones provided in alarm cause: {}'.format(reason_zones))
-
-
     for item in j['zones']:
-        if not match_reason or 'All' in reason_zones or item['Zone']['Name'] in reason_zones:
-            g.polygons.append({
-                'name': item['Zone']['Name'],
-                'value': str2tuple(item['Zone']['Coords'])
-            })
-            g.logger.debug('importing zoneminder polygon: {} [{}]'.format(
-                item['Zone']['Name'], item['Zone']['Coords']), level=2)
-        else:
-            g.logger.debug('dropping {} as zones in alarm cause is {}'.format(item['Zone']['Name'], reason_zones))
+        if  match_reason:
+            if not findWholeWord(item['Zone']['Name'])(reason):
+                g.logger.Debug(1,'dropping {} as zones in alarm cause is {}'.format(item['Zone']['Name'], reason))
+                continue
+        g.logger.Debug(2,'importing zoneminder polygon: {} [{}]'.format(item['Zone']['Name'], item['Zone']['Coords']))
+        g.polygons.append({
+            'name': item['Zone']['Name'],
+            'value': str2tuple(item['Zone']['Coords'])
+        })
 
 
 # downloaded ZM image files for future analysis
